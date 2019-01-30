@@ -21,4 +21,5 @@ from sensor.urls import router as sensor_router
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/', include(sensor_router.urls)),
+    url(r'^mapping/', include('mapping.urls')),
 ]

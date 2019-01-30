@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sensor',
+    'mapping',
     'rest_framework',
 ]
 
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'map.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'], #templatesフォルダへのpath
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
