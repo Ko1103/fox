@@ -1,3 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'mapping/style.css' %}">
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="http://x3dom.org/x3dom/dist/x3dom-full.js"></script>
+    <script type="text/javascript" src="{% static 'mapping/js/index.js' %}" ></script>
+    <link rel="stylesheet" type="text/css" href="http://www.x3dom.org/download/dev/x3dom.css"/>
+    <!-- for pattern 3 -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://unpkg.com/d3-3d/build/d3-3d.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h1>This is chart page</h1>
+    <h2>Pattern 3</h2>
+    <svg width="960" height="500"></svg>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <!-- <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+    <script src="https://d3js.org/d3-path.v1.min.js" charset="utf-8"></script> 
+    <script>
+        // 1. データの準備
+        var width = 800; // グラフの幅
+        var height = 600; // グラフの高さ
+        function himmelblaus(x, y) {
+          return(x * x + y - 11) * (x * x + y - 11) + (x + y * y - 7) * (x + y * y - 7);
+        }
+        var n = 240;
+        var m = 125;
+        var k = 0;
+        var values = new Array(n * m);
+        for(var j = 0; j < m; ++j) {
+          for(var i = 0; i < n; ++i) {
+            var x = i / (n - 1) * 10 - 5;
+            var y = j / (m - 1) * 10 - 5;
+            values[k] = himmelblaus(x, y);
+            ++k;
+          }
+        }
+       
+        // 2. SVG領域の設定
+        var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+       
+        // 3. しきい値の設定
+        var thresholds = d3.range(0, 20).map(function(p) { return 7*p; });
+       
+        // 4. データ変換
+        var contours = d3.contours()
+          .size([n, m])
+          .thresholds(thresholds);
+       
+        // 5. カラースケールの設定
+        var color = d3.scaleSequential(function(t){return d3.hsl(t*230, 1, 0.5) + ""}).domain([140,0]);
+       
+        // 6. コンター用SVG要素の設定
+        svg.selectAll("path")
+          .data(contours(values))
+          .enter()
+          .append("path")
+          .attr("d", d3.geoPath(d3.geoIdentity().scale(width / n)))
+          .attr("fill", function(d) { return color(d.value); })
+          .attr("stroke","white")
+          .attr("stroke-width","0.5");
+        </script>
+    
+    <h2>Pattern 2</h2>
+    <div id="divPlot"></div>
+    <script>
+        d3.select('html').style('height','100%').style('width','100%')
+        d3.select('body').style('height','100%').style('width','100%')
+        d3.select('#divPlot').style('width', "500px").style('height', "500px")
+        scatterPlot3d( d3.select('#divPlot'));
+    </script> -->
+    <button>update</button>
+    <script>
+        var origin = [480, 300], scale = 20, j = 10, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
+    var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
+    var color  = d3.scaleOrdinal(d3.schemeCategory20);
+    var cubesGroup = svg.append('g').attr('class', 'cubes');
+    var mx, my, mouseX, mouseY;
 
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'mapping/style.css' %}">
+    var cubes3D = d3._3d()
+        .shape('CUBE')
+        .x(function(d){ return d.x; })
+        .y(function(d){ return d.y; })
+        .z(function(d){ return d.z; })
+        .rotateY( startAngle)
+        .rotateX(-startAngle)
+        .origin(origin)
+        .scale(scale);
+
+    function processData(data, tt){
+
+        /* --------- CUBES ---------*/
+
+        var cubes = cubesGroup.selectAll('g.cube').data(data, function(d){ return d.id });
+
+        var ce = cubes
+            .enter()
+            .append('g')
+            .attr('class', 'cube')
+            .attr('fill', function(d){ return color(d.id); })
+            .attr('stroke', function(d){ return d3.color(color(d.id)).darker(2); })
+            .merge(cubes)
+            .sort(cubes3D.sort);
+
+        cubes.exit().remove();
+
+        /* --------- FACES ---------*/
+
+        var faces = cubes.merge(ce).selectAll('path.face').data(function(d){ return d.faces; }, function(d){ return d.face; });
+
+        faces.enter()
+            .append('path')
+            .attr('class', 'face')
+            .attr('fill-opacity', 0.95)
+            .classed('_3d', true)
+            .merge(faces)
+            .transition().duration(tt)
+            .attr('d', cubes3D.draw);
+
+        faces.exit().remove();
+
+        /* --------- TEXT ---------*/
+
+        var texts = cubes.merge(ce).selectAll('text.text').data(function(d){
+            var _t = d.faces.filter(function(d){
+                return d.face === 'top';
+            });
+            return [{height: d.height, centroid: _t[0].centroid}];
+        });
+
+        texts
+            .enter()
+            .append('text')
+            .attr('class', 'text')
+            .attr('dy', '-.7em')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'sans-serif')
+            .attr('font-weight', 'bolder')
+            .attr('x', function(d){ return origin[0] + scale * d.centroid.x })
+            .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
+            .classed('_3d', true)
+            .merge(texts)
+            .transition().duration(tt)
+            .attr('fill', 'black')
+            .attr('stroke', 'none')
+            .attr('x', function(d){ return origin[0] + scale * d.centroid.x })
+            .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
+            .tween('text', function(d){
+                var that = d3.select(this);
+                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height));
+                return function(t){
+                    that.text(i(t).toFixed(1));
+                };
+            });
+
+        texts.exit().remove();
+
+        /* --------- SORT TEXT & FACES ---------*/
+
+        ce.selectAll('._3d').sort(d3._3d().sort);
+
+    }
+
+    function init(){
+        cubesData = [];
+        var cnt = 0;
+        for(var z = -j/2; z <= j/2; z = z + 5){
+            for(var x = -j; x <= j; x = x + 5){
+            var h = d3.randomUniform(-2, -7)();
+            var _cube = makeCube(h, x, z);
+                _cube.id = 'cube_' + cnt++;
+                _cube.height = h;
+                cubesData.push(_cube);
+            }
+        }
+        processData(cubes3D(cubesData), 1000);
+    }
+
+    function dragStart(){
+        mx = d3.event.x;
+        my = d3.event.y;
+    }
+
+    function dragged(){
+        mouseX = mouseX || 0;
+        mouseY = mouseY || 0;
+        beta   = (d3.event.x - mx + mouseX) * Math.PI / 230 ;
+        alpha  = (d3.event.y - my + mouseY) * Math.PI / 230  * (-1);
+        processData(cubes3D.rotateY(beta + startAngle).rotateX(alpha - startAngle)(cubesData), 0);
+    }
+
+    function dragEnd(){
+        mouseX = d3.event.x - mx + mouseX;
+        mouseY = d3.event.y - my + mouseY;
+    }
+
+    function makeCube(h, x, z){
+        return [
+            {x: x - 1, y: h, z: z + 1}, // FRONT TOP LEFT
+            {x: x - 1, y: 0, z: z + 1}, // FRONT BOTTOM LEFT
+            {x: x + 1, y: 0, z: z + 1}, // FRONT BOTTOM RIGHT
+            {x: x + 1, y: h, z: z + 1}, // FRONT TOP RIGHT
+            {x: x - 1, y: h, z: z - 1}, // BACK  TOP LEFT
+            {x: x - 1, y: 0, z: z - 1}, // BACK  BOTTOM LEFT
+            {x: x + 1, y: 0, z: z - 1}, // BACK  BOTTOM RIGHT
+            {x: x + 1, y: h, z: z - 1}, // BACK  TOP RIGHT
+        ];
+    }
+
+    d3.selectAll('button').on('click', init);
+
+    init();
+    </script>
+</body>
+</html>
+
