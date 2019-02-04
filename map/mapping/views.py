@@ -1,11 +1,31 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.template import Context, loader
+import json
+from django.views.decorators.csrf import ensure_csrf_cookie
+import requests
 
 def index(request):
     # template = loader.get_template("mapping/index.html")
     # return HttpResponse(template.render())
     return render(request, 'mapping/index.html')
+
+def sigfox(request):
+    baseURL = 'https://backend.sigfox.com/api/v2/'
+    data = '739A8C'
+    messageURL = baseURL + 'devices/' + data + '/messages'
+    user = '5c500fe6e833d917afc9ccb4'
+    password = '5db0745e784d738e0690490aa21c2da6'
+    headers = {'content-type' : 'application/json'}
+    r = requests.get(messageURL, auth=(user, password), headers=headers)
+    if r.status_code == 200:
+        data = r.json()
+        print(json.dumps(data, indent=4))
+        return HttpResponse(data['data'], content_type='application/javascript; charset=UTF-8', status=None)
+    return HttpResponse('Sorry U Failed')
+
+
+
 # # Create your views here.
 # conn = MySQLdb.connect(host = '',
 #     user = 'root',
