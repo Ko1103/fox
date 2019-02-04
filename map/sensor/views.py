@@ -4,7 +4,7 @@ from .models import Sensor, Reference
 from .serializer import SensorSerializer, ReferenceSerializer
 
 class SensorViewset(viewsets.ModelViewSet):
-    queryset = Sensor.objects.all()
+    queryset = Sensor.objects.all() # modelはデフォルトでobjectsを持つ
     serializer_class = SensorSerializer
 
 class ReferenceViewset(viewsets.ModelViewSet):
