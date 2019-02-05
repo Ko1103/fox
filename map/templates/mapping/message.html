@@ -8,24 +8,29 @@
 </head>
 <body>
     <h1>メッセージ一覧</h1>
-    <h2>デバイス</h2>
-    <table border="1">
-        <tr>
-            <th>データ名</th>
-            <th>データ</th>
-        </tr>
-        <tr>
-                <td>デバイスID</td>
-                <td>{{device}}</td>
-            </tr>
-        <tr>
-            <td>タイム</td>
-            <td>{{time}}</td>
-        </tr>
-        <tr>
-            <td>データ</td>
-            <td>{{data}}</td>
-        </tr>
-    </table>
+    <!-- {{ list.0 }} -->
+    {% for item in list %}
+    <div>
+        <h2>デバイス{{item.device.id}}</h2>
+        <table border="1">
+                <tr>
+                    <th>データ名</th>
+                    <th>データ</th>
+                </tr>
+                <tr>
+                        <td>デバイスID</td>
+                        <td>{{item.device.id}}</td>
+                    </tr>
+                <tr>
+                    <td>タイム</td>
+                    <td>{{item.time}}</td>
+                </tr>
+                <tr>
+                    <td>データ</td>
+                    <td>{{item.data}}</td>
+                </tr>
+            </table>
+        </div>
+    {% endfor %}
 </body>
 </html>

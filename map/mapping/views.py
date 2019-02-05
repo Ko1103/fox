@@ -20,7 +20,7 @@ def sigfox(request):
     r = requests.get(messageURL, auth=(user, password), headers=headers)
     if r.status_code == 200:
         data = r.json()
-        app_data = data['data'][0]
+        app_data = data['data']
         # time = data['data'][0]
         # app_data = {}
 
@@ -32,7 +32,7 @@ def sigfox(request):
         #     }
         #     app_data.update(message_data)
         # return HttpResponse(data, content_type='application/javascript; charset=UTF-8', status=None)
-        return render(request, 'mapping/message.html', app_data)
+        return render(request, 'mapping/message.html', {'list' : app_data})
     return HttpResponse('Sorry U Failed')
 
 
