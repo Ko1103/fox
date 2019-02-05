@@ -3,5 +3,5 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('sigfox', views.sigfox),
+    path('sigfox', views.sigfox, name='sigfox'),
 ]
