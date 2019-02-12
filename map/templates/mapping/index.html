@@ -17,78 +17,23 @@
 </head>
 <body>
     <h1>土壌水分センサより求めた含水比</h1>
-    <!-- <div class="data">
-        {% for item in list %}
-        {{ item.data }}
-        {% endfor %}
-    </div> -->
-    {% for item in data%}
-        <p class="value">{{item}}</p>
-    {% endfor %}
-    <!-- <p class="value">10.0</p>
-    <p class="value">4.5</p>
-    <p class="value">7.8</p>
-    <p class="value">2.4</p>
-    <p class="value">4.2</p> -->
-
-    <svg width="960" height="500"></svg>
+    <svg width="960" height="500" style="float:left"></svg>
+    <table border="1">
+            <tr>
+                <th>センサ名</th>
+                <th>含水比[%]</th>
+            </tr>
+            {% for item in data %}
+                <tr>
+                    <td>センサ{{forloop.counter}}</td>
+                    <td class="value" style="text-align:center;">{{item}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    <!-- {% for item in data%}
+        <p>{{forloop.counter}}</p><p class="value">{{item}}</p>
+    {% endfor %} -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <!-- <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
-    <script src="https://d3js.org/d3-path.v1.min.js" charset="utf-8"></script> 
-    <script>
-        // 1. データの準備
-        var width = 800; // グラフの幅
-        var height = 600; // グラフの高さ
-        function himmelblaus(x, y) {
-          return(x * x + y - 11) * (x * x + y - 11) + (x + y * y - 7) * (x + y * y - 7);
-        }
-        var n = 240;
-        var m = 125;
-        var k = 0;
-        var values = new Array(n * m);
-        for(var j = 0; j < m; ++j) {
-          for(var i = 0; i < n; ++i) {
-            var x = i / (n - 1) * 10 - 5;
-            var y = j / (m - 1) * 10 - 5;
-            values[k] = himmelblaus(x, y);
-            ++k;
-          }
-        }
-       
-        // 2. SVG領域の設定
-        var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-       
-        // 3. しきい値の設定
-        var thresholds = d3.range(0, 20).map(function(p) { return 7*p; });
-       
-        // 4. データ変換
-        var contours = d3.contours()
-          .size([n, m])
-          .thresholds(thresholds);
-       
-        // 5. カラースケールの設定
-        var color = d3.scaleSequential(function(t){return d3.hsl(t*230, 1, 0.5) + ""}).domain([140,0]);
-       
-        // 6. コンター用SVG要素の設定
-        svg.selectAll("path")
-          .data(contours(values))
-          .enter()
-          .append("path")
-          .attr("d", d3.geoPath(d3.geoIdentity().scale(width / n)))
-          .attr("fill", function(d) { return color(d.value); })
-          .attr("stroke","white")
-          .attr("stroke-width","0.5");
-        </script>
-    
-    <h2>Pattern 2</h2>
-    <div id="divPlot"></div>
-    <script>
-        d3.select('html').style('height','100%').style('width','100%')
-        d3.select('body').style('height','100%').style('width','100%')
-        d3.select('#divPlot').style('width', "500px").style('height', "500px")
-        scatterPlot3d( d3.select('#divPlot'));
-    </script> -->
-    <button>update</button>
     <script>
         var values = document.getElementsByClassName("value");
         var sensorValues = [];
@@ -199,7 +144,7 @@
             // var h = d3.randomUniform(-2, -7)();
             // もともと -2 ~ -7までの範囲
             // 含水比を 0 ~ -10に割り振る
-            var h = -0.5 * heights[t];
+            var h = -0.1 * heights[t];
             t = t + 1;
             console.log(x);
             var _cube = makeCube(h, x, z);
