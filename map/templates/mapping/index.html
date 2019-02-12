@@ -16,9 +16,18 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>This is chart page</h1>
-    <h2>Pattern 3</h2>
-    
+    <h1>土壌水分センサより求めた含水比</h1>
+    <!-- <div class="data">
+        {% for item in list %}
+        {{ item.data }}
+        {% endfor %}
+    </div> -->
+    <p class="value">10.0</p>
+    <p class="value">4.5</p>
+    <p class="value">7.8</p>
+    <p class="value">2.4</p>
+    <p class="value">4.2</p>
+
     <svg width="960" height="500"></svg>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <!-- <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
@@ -78,6 +87,15 @@
     </script> -->
     <button>update</button>
     <script>
+        var values = document.getElementsByClassName("value");
+        var sensorValues = [];
+        for (var i=0; i < values.length; i++) {
+            var target = values[i].innerText;
+            sensorValues.push(parseFloat(target));
+        }
+        console.log(sensorValues);
+        
+
     var origin = [480, 300], scale = 20, j = 10, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
     var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color  = d3.scaleOrdinal(d3.schemeCategory20);
@@ -154,7 +172,7 @@
             .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
             .tween('text', function(d){
                 var that = d3.select(this);
-                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height));
+                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height)*10);
                 return function(t){
                     that.text(i(t).toFixed(1));
                 };
@@ -171,9 +189,16 @@
     function init(){
         cubesData = [];
         var cnt = 0;
-        for(var z = -j/2; z <= j/2; z = z + 5){
+        var heights = sensorValues;
+        var t = 0;
+        for(var z = -j/2; z <= j/2; z = z + 12){
             for(var x = -j; x <= j; x = x + 5){
-            var h = d3.randomUniform(-2, -7)();
+            // var h = d3.randomUniform(-2, -7)();
+            // もともと -2 ~ -7までの範囲
+            // 含水比を 0 ~ -10に割り振る
+            var h = -0.5 * heights[t];
+            t = t + 1;
+            console.log(x);
             var _cube = makeCube(h, x, z);
                 _cube.id = 'cube_' + cnt++;
                 _cube.height = h;
