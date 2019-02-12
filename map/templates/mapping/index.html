@@ -22,11 +22,14 @@
         {{ item.data }}
         {% endfor %}
     </div> -->
-    <p class="value">10.0</p>
+    {% for item in data%}
+        <p class="value">{{item}}</p>
+    {% endfor %}
+    <!-- <p class="value">10.0</p>
     <p class="value">4.5</p>
     <p class="value">7.8</p>
     <p class="value">2.4</p>
-    <p class="value">4.2</p>
+    <p class="value">4.2</p> -->
 
     <svg width="960" height="500"></svg>
     <script src="https://d3js.org/d3.v5.min.js"></script>
