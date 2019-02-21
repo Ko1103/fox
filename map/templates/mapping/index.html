@@ -25,7 +25,7 @@
             </tr>
             {% for item in data %}
                 <tr>
-                    <td>センサ{{forloop.counter}}</td>
+                    <td>データ{{forloop.counter}}</td>
                     <td class="value" style="text-align:center;">{{item}}</td>
                 </tr>
             {% endfor %}
@@ -44,9 +44,17 @@
         console.log(sensorValues);
         
 
-    var origin = [480, 300], scale = 20, j = 10, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
+    var origin = [480, 300], scale = 20, j = 20, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
     var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
-    var color  = d3.scaleOrdinal(d3.schemeCategory20);
+    // var color  = d3.scaleOrdinal(d3.schemeCategory20);
+    var color = d3.scaleOrdinal().range(["red", "blue", "orange", "yellow", "green"]);
+    // グラフの色配列
+    var cubeColors = [];
+    for (var i=0;i<5;i++) {
+        var newColor = color(i+1);
+        cubeColors.push(newColor);
+    }
+
     var cubesGroup = svg.append('g').attr('class', 'cubes');
     var mx, my, mouseX, mouseY;
 
@@ -61,24 +69,21 @@
         .scale(scale);
 
     function processData(data, tt){
-
-        /* --------- CUBES ---------*/
-
         var cubes = cubesGroup.selectAll('g.cube').data(data, function(d){ return d.id });
-
         var ce = cubes
             .enter()
             .append('g')
             .attr('class', 'cube')
-            .attr('fill', function(d){ return color(d.id); })
-            .attr('stroke', function(d){ return d3.color(color(d.id)).darker(2); })
+            .attr('fill', function(d){
+                var targetNum = (d.id % 5)-1;
+                //  return cubeColors[targetNum];
+                 return color(d.id);
+            }) //色 idは1からスタート 
+            .attr('stroke', function(d){ return d3.color(color(d.id)).darker(2); }) // 色
             .merge(cubes)
             .sort(cubes3D.sort);
 
         cubes.exit().remove();
-
-        /* --------- FACES ---------*/
-
         var faces = cubes.merge(ce).selectAll('path.face').data(function(d){ return d.faces; }, function(d){ return d.face; });
 
         faces.enter()
@@ -139,8 +144,8 @@
         var cnt = 0;
         var heights = sensorValues;
         var t = 0;
-        for(var z = -j/2; z <= j/2; z = z + 12){
-            for(var x = -j; x <= j; x = x + 5){
+        for(var z = 0; z >= -j; z = z - 12){
+            for(var x = -10; x <= 10; x = x + 5){
             // var h = d3.randomUniform(-2, -7)();
             // もともと -2 ~ -7までの範囲
             // 含水比を 0 ~ -10に割り振る
@@ -176,19 +181,17 @@
 
     function makeCube(h, x, z){
         return [
-            {x: x - 1, y: h, z: z + 1}, // FRONT TOP LEFT
-            {x: x - 1, y: 0, z: z + 1}, // FRONT BOTTOM LEFT
-            {x: x + 1, y: 0, z: z + 1}, // FRONT BOTTOM RIGHT
-            {x: x + 1, y: h, z: z + 1}, // FRONT TOP RIGHT
-            {x: x - 1, y: h, z: z - 1}, // BACK  TOP LEFT
-            {x: x - 1, y: 0, z: z - 1}, // BACK  BOTTOM LEFT
-            {x: x + 1, y: 0, z: z - 1}, // BACK  BOTTOM RIGHT
-            {x: x + 1, y: h, z: z - 1}, // BACK  TOP RIGHT
+            {x: x - 1, y: h, z: z + 1}, 
+            {x: x - 1, y: 0, z: z + 1}, 
+            {x: x + 1, y: 0, z: z + 1}, 
+            {x: x + 1, y: h, z: z + 1}, 
+            {x: x - 1, y: h, z: z - 1}, 
+            {x: x - 1, y: 0, z: z - 1}, 
+            {x: x + 1, y: 0, z: z - 1}, 
+            {x: x + 1, y: h, z: z - 1}, 
         ];
     }
-
     d3.selectAll('button').on('click', init);
-
     init();
     </script>
 </body>
