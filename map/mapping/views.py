@@ -19,8 +19,12 @@ def index(request):
         data = r.json()
         app_data = data['data']
     # targetData = app_data[0] # ここを切り替える。
+    count = 0
     for targetData in app_data:
         messageData = targetData['data']
+        count = count+1
+        if count > 2:
+            break
         for i in range(1,18,4):
             target = messageData[i:(i+3)]
             value = int(target, 16)
