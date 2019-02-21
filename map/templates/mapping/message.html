@@ -31,5 +31,22 @@
             </table>
         </div>
     {% endfor %}
+    <!-- <script type="text/javascript">
+        $(function(){
+    var myObj, x, y;
+    var myDjangoList = (("{{list |safe}}").replace(/&(l|g|quo)t;/g, function(a,b){
+                return {
+                    l   : '<',
+                    g   : '>',
+                    quo : '"'
+                }[b];
+            }));
+    myDjangoList = myDjangoList.replace(/u'/g, '\'')
+    myDjangoList = myDjangoList.replace(/'/g, '\"')
+    myData = JSON.parse( myDjangoList );
+    document.getElementById("demo").innerHTML = "tag: " + myData[0].tag + ", weight: " + myData[0].weight;
+});
+        log();
+    </script> -->
 </body>
 </html>

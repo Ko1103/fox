@@ -16,68 +16,34 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>This is chart page</h1>
-    <h2>Pattern 3</h2>
-    
-    <svg width="960" height="500"></svg>
+    <h1>土壌水分センサより求めた含水比</h1>
+    <svg width="800" height="500" style="float:left"></svg>
+    <table border="1">
+            <tr>
+                <th>センサ名</th>
+                <th>含水比[%]</th>
+            </tr>
+            {% for item in data %}
+                <tr>
+                    <td>センサ{{forloop.counter}}</td>
+                    <td class="value" style="text-align:center;">{{item}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    <!-- {% for item in data%}
+        <p>{{forloop.counter}}</p><p class="value">{{item}}</p>
+    {% endfor %} -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
-    <!-- <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
-    <script src="https://d3js.org/d3-path.v1.min.js" charset="utf-8"></script> 
     <script>
-        // 1. データの準備
-        var width = 800; // グラフの幅
-        var height = 600; // グラフの高さ
-        function himmelblaus(x, y) {
-          return(x * x + y - 11) * (x * x + y - 11) + (x + y * y - 7) * (x + y * y - 7);
+        var values = document.getElementsByClassName("value");
+        var sensorValues = [];
+        for (var i=0; i < values.length; i++) {
+            var target = values[i].innerText;
+            sensorValues.push(parseFloat(target));
         }
-        var n = 240;
-        var m = 125;
-        var k = 0;
-        var values = new Array(n * m);
-        for(var j = 0; j < m; ++j) {
-          for(var i = 0; i < n; ++i) {
-            var x = i / (n - 1) * 10 - 5;
-            var y = j / (m - 1) * 10 - 5;
-            values[k] = himmelblaus(x, y);
-            ++k;
-          }
-        }
-       
-        // 2. SVG領域の設定
-        var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-       
-        // 3. しきい値の設定
-        var thresholds = d3.range(0, 20).map(function(p) { return 7*p; });
-       
-        // 4. データ変換
-        var contours = d3.contours()
-          .size([n, m])
-          .thresholds(thresholds);
-       
-        // 5. カラースケールの設定
-        var color = d3.scaleSequential(function(t){return d3.hsl(t*230, 1, 0.5) + ""}).domain([140,0]);
-       
-        // 6. コンター用SVG要素の設定
-        svg.selectAll("path")
-          .data(contours(values))
-          .enter()
-          .append("path")
-          .attr("d", d3.geoPath(d3.geoIdentity().scale(width / n)))
-          .attr("fill", function(d) { return color(d.value); })
-          .attr("stroke","white")
-          .attr("stroke-width","0.5");
-        </script>
-    
-    <h2>Pattern 2</h2>
-    <div id="divPlot"></div>
-    <script>
-        d3.select('html').style('height','100%').style('width','100%')
-        d3.select('body').style('height','100%').style('width','100%')
-        d3.select('#divPlot').style('width', "500px").style('height', "500px")
-        scatterPlot3d( d3.select('#divPlot'));
-    </script> -->
-    <button>update</button>
-    <script>
+        console.log(sensorValues);
+        
+
     var origin = [480, 300], scale = 20, j = 10, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
     var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color  = d3.scaleOrdinal(d3.schemeCategory20);
@@ -154,7 +120,7 @@
             .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
             .tween('text', function(d){
                 var that = d3.select(this);
-                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height));
+                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height)*10);
                 return function(t){
                     that.text(i(t).toFixed(1));
                 };
@@ -171,9 +137,16 @@
     function init(){
         cubesData = [];
         var cnt = 0;
-        for(var z = -j/2; z <= j/2; z = z + 5){
+        var heights = sensorValues;
+        var t = 0;
+        for(var z = -j/2; z <= j/2; z = z + 12){
             for(var x = -j; x <= j; x = x + 5){
-            var h = d3.randomUniform(-2, -7)();
+            // var h = d3.randomUniform(-2, -7)();
+            // もともと -2 ~ -7までの範囲
+            // 含水比を 0 ~ -10に割り振る
+            var h = -0.1 * heights[t];
+            t = t + 1;
+            console.log(x);
             var _cube = makeCube(h, x, z);
                 _cube.id = 'cube_' + cnt++;
                 _cube.height = h;
