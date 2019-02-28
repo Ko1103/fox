@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'mapping/style.css' %}">
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="http://x3dom.org/x3dom/dist/x3dom-full.js"></script>
+    <script type="text/javascript" src="{% static 'mapping/js/index.js' %}" ></script>
+    <link rel="stylesheet" type="text/css" href="http://www.x3dom.org/download/dev/x3dom.css"/>
+    <!-- for pattern 3 -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://unpkg.com/d3-3d/build/d3-3d.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h1>土壌水分センサより求めた含水比</h1>
+    <svg width="800" height="500" style="float:left"></svg>
+    <table border="1">
+            <tr>
+                <th>センサ名</th>
+                <th>含水比[%]</th>
+            </tr>
+            {% for item in data %}
+                <tr>
+                    <td>データ{{forloop.counter}}</td>
+                    <td class="value" style="text-align:center;">{{item}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    <!-- {% for item in data%}
+        <p>{{forloop.counter}}</p><p class="value">{{item}}</p>
+    {% endfor %} -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        var values = document.getElementsByClassName("value");
+        var sensorValues = [];
+        for (var i=0; i < values.length; i++) {
+            var target = values[i].innerText;
+            sensorValues.push(parseFloat(target));
+        }
+        console.log(sensorValues);
+        
+
+    var origin = [480, 300], scale = 20, j = 20, cubesData = [], alpha = 0, beta = 0, startAngle = Math.PI/6;
+    var svg    = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
+    // var color  = d3.scaleOrdinal(d3.schemeCategory20);
+    var color = d3.scaleOrdinal().range(["red", "blue", "orange", "yellow", "green"]);
+    // グラフの色配列
+    var cubeColors = [];
+    for (var i=0;i<5;i++) {
+        var newColor = color(i+1);
+        cubeColors.push(newColor);
+    }
+
+    var cubesGroup = svg.append('g').attr('class', 'cubes');
+    var mx, my, mouseX, mouseY;
+
+    var cubes3D = d3._3d()
+        .shape('CUBE')
+        .x(function(d){ return d.x; })
+        .y(function(d){ return d.y; })
+        .z(function(d){ return d.z; })
+        .rotateY( startAngle)
+        .rotateX(-startAngle)
+        .origin(origin)
+        .scale(scale);
+
+    function processData(data, tt){
+        var cubes = cubesGroup.selectAll('g.cube').data(data, function(d){ return d.id });
+        var ce = cubes
+            .enter()
+            .append('g')
+            .attr('class', 'cube')
+            .attr('fill', function(d){
+                var targetNum = (d.id % 5)-1;
+                //  return cubeColors[targetNum];
+                 return color(d.id);
+            }) //色 idは1からスタート 
+            .attr('stroke', function(d){ return d3.color(color(d.id)).darker(2); }) // 色
+            .merge(cubes)
+            .sort(cubes3D.sort);
+
+        cubes.exit().remove();
+        var faces = cubes.merge(ce).selectAll('path.face').data(function(d){ return d.faces; }, function(d){ return d.face; });
+
+        faces.enter()
+            .append('path')
+            .attr('class', 'face')
+            .attr('fill-opacity', 0.95)
+            .classed('_3d', true)
+            .merge(faces)
+            .transition().duration(tt)
+            .attr('d', cubes3D.draw);
+
+        faces.exit().remove();
+
+        /* --------- TEXT ---------*/
+
+        var texts = cubes.merge(ce).selectAll('text.text').data(function(d){
+            var _t = d.faces.filter(function(d){
+                return d.face === 'top';
+            });
+            return [{height: d.height, centroid: _t[0].centroid}];
+        });
+
+        texts
+            .enter()
+            .append('text')
+            .attr('class', 'text')
+            .attr('dy', '-.7em')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'sans-serif')
+            .attr('font-weight', 'bolder')
+            .attr('x', function(d){ return origin[0] + scale * d.centroid.x })
+            .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
+            .classed('_3d', true)
+            .merge(texts)
+            .transition().duration(tt)
+            .attr('fill', 'black')
+            .attr('stroke', 'none')
+            .attr('x', function(d){ return origin[0] + scale * d.centroid.x })
+            .attr('y', function(d){ return origin[1] + scale * d.centroid.y })
+            .tween('text', function(d){
+                var that = d3.select(this);
+                var i = d3.interpolateNumber(+that.text(), Math.abs(d.height)*10);
+                return function(t){
+                    that.text(i(t).toFixed(1));
+                };
+            });
+
+        texts.exit().remove();
+
+        /* --------- SORT TEXT & FACES ---------*/
+
+        ce.selectAll('._3d').sort(d3._3d().sort);
+
+    }
+
+    function init(){
+        cubesData = [];
+        var cnt = 0;
+        var heights = sensorValues;
+        var t = 0;
+        for(var z = 0; z >= -j; z = z - 12){
+            for(var x = -10; x <= 10; x = x + 5){
+            // var h = d3.randomUniform(-2, -7)();
+            // もともと -2 ~ -7までの範囲
+            // 含水比を 0 ~ -10に割り振る
+            var h = -0.1 * heights[t];
+            t = t + 1;
+            console.log(x);
+            var _cube = makeCube(h, x, z);
+                _cube.id = 'cube_' + cnt++;
+                _cube.height = h;
+                cubesData.push(_cube);
+            }
+        }
+        processData(cubes3D(cubesData), 1000);
+    }
+
+    function dragStart(){
+        mx = d3.event.x;
+        my = d3.event.y;
+    }
+
+    function dragged(){
+        mouseX = mouseX || 0;
+        mouseY = mouseY || 0;
+        beta   = (d3.event.x - mx + mouseX) * Math.PI / 230 ;
+        alpha  = (d3.event.y - my + mouseY) * Math.PI / 230  * (-1);
+        processData(cubes3D.rotateY(beta + startAngle).rotateX(alpha - startAngle)(cubesData), 0);
+    }
+
+    function dragEnd(){
+        mouseX = d3.event.x - mx + mouseX;
+        mouseY = d3.event.y - my + mouseY;
+    }
+
+    function makeCube(h, x, z){
+        return [
+            {x: x - 1, y: h, z: z + 1}, 
+            {x: x - 1, y: 0, z: z + 1}, 
+            {x: x + 1, y: 0, z: z + 1}, 
+            {x: x + 1, y: h, z: z + 1}, 
+            {x: x - 1, y: h, z: z - 1}, 
+            {x: x - 1, y: 0, z: z - 1}, 
+            {x: x + 1, y: 0, z: z - 1}, 
+            {x: x + 1, y: h, z: z - 1}, 
+        ];
+    }
+    d3.selectAll('button').on('click', init);
+    init();
+    </script>
+</body>
+</html>
+

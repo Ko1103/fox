@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sigfox messages</title>
+</head>
+<body>
+    <h1>メッセージ一覧</h1>
+    {% for item in list %}
+    <div>
+        <h2>デバイス{{item.device.id}}</h2>
+        <table border="1">
+                <tr>
+                    <th>データ名</th>
+                    <th>データ</th>
+                </tr>
+                <tr>
+                        <td>デバイスID</td>
+                        <td>{{item.device.id}}</td>
+                    </tr>
+                <tr>
+                    <td>タイム</td>
+                    <td>{{item.time}}</td>
+                </tr>
+                <tr>
+                    <td>データ</td>
+                    <td>{{item.data}}</td>
+                </tr>
+            </table>
+        </div>
+    {% endfor %}
+    <!-- <script type="text/javascript">
+        $(function(){
+    var myObj, x, y;
+    var myDjangoList = (("{{list |safe}}").replace(/&(l|g|quo)t;/g, function(a,b){
+                return {
+                    l   : '<',
+                    g   : '>',
+                    quo : '"'
+                }[b];
+            }));
+    myDjangoList = myDjangoList.replace(/u'/g, '\'')
+    myDjangoList = myDjangoList.replace(/'/g, '\"')
+    myData = JSON.parse( myDjangoList );
+    document.getElementById("demo").innerHTML = "tag: " + myData[0].tag + ", weight: " + myData[0].weight;
+});
+        log();
+    </script> -->
+</body>
+</html>
